@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activities.MainActivity">
+
+    <include layout="@layout/custom_board_layout"
+        android:layout_weight="3"
+        android:layout_height="0dp"
+        android:layout_width="match_parent">
+    </include>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/turn_text"
+            android:id="@+id/turnDescription"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:textAllCaps="false"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <include layout="@layout/player_line_layout"
+                     android:id="@+id/playerOneStats"
+                     android:layout_weight="1"
+                     android:layout_height="0dp"
+                     android:layout_width="match_parent">
+            </include>
+
+            <include layout="@layout/player_line_layout"
+                     android:id="@+id/playerTwoStats"
+                     android:layout_weight="1"
+                     android:layout_height="0dp"
+                     android:layout_width="match_parent">
+            </include>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>

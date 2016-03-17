@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/customBoardLayout"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+
+    <reversi.game.basic.com.tom.reversi.game_board.GameBoardLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/gameBoard"
+        android:background="@color/Black"/>
+
+</FrameLayout>
