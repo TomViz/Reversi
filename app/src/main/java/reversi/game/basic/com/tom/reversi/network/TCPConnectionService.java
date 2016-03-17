@@ -2,7 +2,7 @@ package reversi.game.basic.com.tom.reversi.network;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.os.PowerManager;
+//import android.os.PowerManager;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -67,10 +67,10 @@ public class TCPConnectionService extends IntentService
     private static ServerSocket server;
     private static Socket socket;
     private static PrintWriter out;
-    private static PowerManager.WakeLock keepAwake;
+//    private static PowerManager.WakeLock keepAwake;
 
 
-    private static final String TAG_LOCK = "Still Alive";
+//    private static final String TAG_LOCK = "Still Alive";
 
     public TCPConnectionService()
     {
@@ -151,9 +151,9 @@ public class TCPConnectionService extends IntentService
     {
         POOL.execute(new OpponentListener());
         out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-        keepAwake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG_LOCK);
-        keepAwake.acquire();
+//        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+//        keepAwake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG_LOCK);
+//        keepAwake.acquire();
     }
 
     /**
@@ -219,7 +219,7 @@ public class TCPConnectionService extends IntentService
             {
                 closeStreams();
                 closeSockets();
-                keepAwake.release();
+//                keepAwake.release();
             }
         }
 
