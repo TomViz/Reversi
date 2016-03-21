@@ -10,6 +10,8 @@ import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 
 import reversi.game.basic.com.tom.reversi.activities.IPresentation;
+import reversi.game.basic.com.tom.reversi.controller.ControllerBus;
+import reversi.game.basic.com.tom.reversi.controller.Events;
 import reversi.game.basic.com.tom.reversi.controller.GameController;
 import reversi.game.basic.com.tom.reversi.controller.IReversiController;
 import reversi.game.basic.com.tom.reversi.game_board.GameBoardModel;
@@ -22,6 +24,7 @@ public final class App extends Application
     private static App INSTANCE;
     private static GameBoardModel MODEL;
     private static GameController CONTROLLER;
+    private static ControllerBus BUS;
 
     public App()
     {
@@ -52,6 +55,32 @@ public final class App extends Application
         }
 
         return MODEL;
+    }
+
+    public static void register(IReversiController controller)
+    {
+        if (BUS == null)
+        {
+            BUS = new ControllerBus();
+        }
+
+        BUS.register(controller, Events.MESSAGE_SEND);
+    }
+
+    public static void unregister(IReversiController controller)
+    {
+        if (BUS != null)
+        {
+            BUS.unregister(controller, Events.MESSAGE_SEND);
+        }
+    }
+
+    public static void sendCoordinates(int row, int column)
+    {
+        if (BUS != null)
+        {
+            BUS.passCoordinates(row, column);
+        }
     }
 
     /**

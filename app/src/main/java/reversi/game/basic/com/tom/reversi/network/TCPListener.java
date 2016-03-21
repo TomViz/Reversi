@@ -1,18 +1,14 @@
 package reversi.game.basic.com.tom.reversi.network;
 
 import android.graphics.Point;
-import android.util.Log;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
+import reversi.game.basic.com.tom.reversi.utility.App;
 import reversi.game.basic.com.tom.reversi.utility.BroadcastRouter;
-import reversi.game.basic.com.tom.reversi.utility.ServiceRouter;
 
 /**
  * Class intended to be run as a listener thread and passing along the incoming messages via broadcast.
@@ -38,7 +34,8 @@ public class TCPListener implements Runnable
                 Point p = JSONHandler.getCoordinates(line);
                 if (p != null)
                 {
-                    BroadcastRouter.sendMoveFromOtherPlayer(p.x, p.y);
+//                    BroadcastRouter.sendMoveFromOtherPlayer(p.x, p.y);
+                    App.sendCoordinates(p.x, p.y);
                 }
                 // TODO else broadcast received illegal command?
             }

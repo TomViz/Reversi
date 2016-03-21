@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.widget.EditText;
 
 import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
-//import reversi.game.basic.com.tom.reversi.utility.ServiceRouter;
+//import reversi.game.basic.com.tom.reversi.trash.ServiceRouter;
 
 /**
  * Dialog for manually entering IP address and attempting to connect to server.

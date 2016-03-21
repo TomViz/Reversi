@@ -1,4 +1,4 @@
-package reversi.game.basic.com.tom.reversi.network;
+package reversi.game.basic.com.tom.reversi.trash;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -21,7 +21,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import reversi.game.basic.com.tom.reversi.utility.BroadcastRouter;
-import reversi.game.basic.com.tom.reversi.utility.ServiceRouter;
 
 public class TCPConnectionService extends IntentService
 {

@@ -33,7 +33,6 @@ import reversi.game.basic.com.tom.reversi.utility.ActivityRouter;
 import reversi.game.basic.com.tom.reversi.utility.App;
 import reversi.game.basic.com.tom.reversi.utility.BroadcastRouter;
 import reversi.game.basic.com.tom.reversi.utility.PlayerIconContainer;
-import reversi.game.basic.com.tom.reversi.utility.ServiceRouter;
 import reversi.game.basic.com.tom.reversi.utility.ShakeListener;
 
 public class MainActivity extends AppCompatActivity implements IPresentation
@@ -56,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     private Sensor accelerometer;
     private ShakeListener shakeListener = new ShakeListener();
 
-    private OpponentCommandReceiver receiver = new OpponentCommandReceiver();
+//    private OpponentCommandReceiver receiver = new OpponentCommandReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -124,8 +123,9 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     {
         super.onResume();
         sensorMgr.registerListener(shakeListener, accelerometer, SensorManager.SENSOR_DELAY_UI);
-        IntentFilter filter = new IntentFilter(BroadcastRouter.MOVE_SEND);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+//        IntentFilter filter = new IntentFilter(BroadcastRouter.MOVE_SEND);
+//        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+        App.register(controller);
         controller.setup();
     }
 
@@ -133,7 +133,8 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     protected void onPause()
     {
         sensorMgr.unregisterListener(shakeListener);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        App.unregister(controller);
         super.onPause();
     }
 
@@ -220,9 +221,16 @@ public class MainActivity extends AppCompatActivity implements IPresentation
         changePlayerScore(1, numOfTiles);
     }
 
-    private void changePlayerScore(int playerIndex, int numOfTiles)
+    private void changePlayerScore(final int playerIndex, final int numOfTiles)
     {
-        playerScores[playerIndex].setText(String.valueOf(numOfTiles));
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                playerScores[playerIndex].setText(String.valueOf(numOfTiles));
+            }
+        });
     }
 
     private void findViews()
@@ -245,19 +253,19 @@ public class MainActivity extends AppCompatActivity implements IPresentation
         return ( (row * boardSize) + col );
     }
 
-    private class OpponentCommandReceiver extends BroadcastReceiver
-    {
-        @Override
-        public void onReceive(Context context, Intent intent)
-        {
-            Log.d("Receiver", "Received opponent move!");
-            if (BroadcastRouter.MOVE_SEND.equals(intent.getAction()))
-            {
-                int row = intent.getIntExtra(BroadcastRouter.BROADCAST_ROW_KEY, -1);
-                int column = intent.getIntExtra(BroadcastRouter.BROADCAST_COLUMN_KEY, -1);
-                Log.d("Receiver", "Opponent has touched row " + row + " and column " + column);
-                controller.onTileTouch(row, column);
-            }
-        }
-    }
+//    private class OpponentCommandReceiver extends BroadcastReceiver
+//    {
+//        @Override
+//        public void onReceive(Context context, Intent intent)
+//        {
+//            Log.d("Receiver", "Received opponent move!");
+//            if (BroadcastRouter.MOVE_SEND.equals(intent.getAction()))
+//            {
+//                int row = intent.getIntExtra(BroadcastRouter.BROADCAST_ROW_KEY, -1);
+//                int column = intent.getIntExtra(BroadcastRouter.BROADCAST_COLUMN_KEY, -1);
+//                Log.d("Receiver", "Opponent has touched row " + row + " and column " + column);
+//                controller.onTileTouch(row, column);
+//            }
+//        }
+//    }
 }

@@ -6,8 +6,6 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import reversi.game.basic.com.tom.reversi.utility.ServiceRouter;
-
 /**
  * Utility class for handling JSONs utilized in this project's scope.
  */

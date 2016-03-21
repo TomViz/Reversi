@@ -22,7 +22,6 @@ import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
 import reversi.game.basic.com.tom.reversi.utility.ActivityRouter;
 import reversi.game.basic.com.tom.reversi.utility.App;
 import reversi.game.basic.com.tom.reversi.utility.BroadcastRouter;
-import reversi.game.basic.com.tom.reversi.utility.ServiceRouter;
 
 public class TitleScreenActivity extends AppCompatActivity
 {

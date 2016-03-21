@@ -33,7 +33,7 @@
         </activity>
 
         <service
-            android:name=".network.TCPConnectionService"
+            android:name=".trash.TCPConnectionService"
             android:exported="false">
         </service>
 

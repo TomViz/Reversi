@@ -1,10 +1,10 @@
-package reversi.game.basic.com.tom.reversi.utility;
+package reversi.game.basic.com.tom.reversi.trash;
 
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import reversi.game.basic.com.tom.reversi.network.TCPConnectionService;
+import reversi.game.basic.com.tom.reversi.trash.TCPConnectionService;
 
 /**
  * Utility class to handle requests for service start.
