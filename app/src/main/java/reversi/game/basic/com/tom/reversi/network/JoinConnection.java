@@ -1,17 +1,20 @@
 package reversi.game.basic.com.tom.reversi.network;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * Class for handling join connection setup and message sending requests.
  */
-public class JoinConnection
+public class JoinConnection implements IConnection
 {
+    private static final String JOIN_TAG = "Join";
+
     private Socket socket;
     private String ipAddress;
     private int port;
@@ -30,8 +33,28 @@ public class JoinConnection
         POOL.execute(new TCPListener(socket));
     }
 
-    public void close() throws IOException
+    @Override
+    public void sendCoordinates(int row, int column)
     {
-        socket.close();
+        try
+        {
+            TCPMessageSender.send(socket, row, column);
+        }
+        catch (IOException e)
+        {
+            Log.e(JOIN_TAG, "Failed to send message");
+        }
+    }
+
+    public void close()
+    {
+        try
+        {
+            socket.close();
+        }
+        catch (IOException e)
+        {
+            Log.e(JOIN_TAG, "Failed to close resources");
+        }
     }
 }

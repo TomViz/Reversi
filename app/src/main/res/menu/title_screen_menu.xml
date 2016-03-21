@@ -4,6 +4,11 @@
       tools:context=".activities.TitleScreenActivity">
 
     <item android:id="@+id/about"
+          android:icon="@android:drawable/ic_menu_agenda"
           android:title="@string/about_title"/>
+
+    <item android:id="@+id/help"
+          android:icon="@android:drawable/ic_menu_help"
+          android:title="@string/help_title"/>
 
 </menu>

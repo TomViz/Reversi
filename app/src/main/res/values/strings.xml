@@ -9,4 +9,8 @@
     <string name="host_button">Host</string>
     <string name="join_button">Join</string>
     <string name="turn_text">Your turn</string>
+    <string name="screen_1_description">Screen 1</string>
+    <string name="screen_2_description">Screen 2</string>
+    <string name="screen_3_description">Screen 3</string>
+    <string name="help_title">Help</string>
 </resources>

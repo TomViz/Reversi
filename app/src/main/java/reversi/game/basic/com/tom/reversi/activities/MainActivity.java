@@ -28,6 +28,7 @@ import reversi.game.basic.com.tom.reversi.game_board.GameBoardLayout;
 import reversi.game.basic.com.tom.reversi.game_board.GamePieceView;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
 import reversi.game.basic.com.tom.reversi.game_board.TileOccupancy;
+import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
 import reversi.game.basic.com.tom.reversi.utility.ActivityRouter;
 import reversi.game.basic.com.tom.reversi.utility.App;
 import reversi.game.basic.com.tom.reversi.utility.BroadcastRouter;
@@ -109,7 +110,8 @@ public class MainActivity extends AppCompatActivity implements IPresentation
                 board.setOnTileTouchListener(null);
                 controller.onTileTouch(row, col);
                 Log.d("Listener", "User has touched row #" + row + " and column #" + col);
-                ServiceRouter.startSendService(MainActivity.this, row, col);
+//                ServiceRouter.startSendService(MainActivity.this, row, col);
+                ConnectionHandler.sendCommand(row, col);
             }
         };
 

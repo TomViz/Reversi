@@ -1,0 +1,15 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:id="@+id/screen2Layout"
+             tools:context="reversi.game.basic.com.tom.reversi.help.Screen1Fragment">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/screen2Image"
+        android:src="@drawable/screen2"
+        android:contentDescription="@string/screen_2_description"/>
+
+</FrameLayout>

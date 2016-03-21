@@ -18,6 +18,7 @@ import android.widget.Button;
 import reversi.game.basic.com.tom.reversi.R;
 import reversi.game.basic.com.tom.reversi.fragments.AboutDialogFragment;
 import reversi.game.basic.com.tom.reversi.fragments.JoinDialogFragment;
+import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
 import reversi.game.basic.com.tom.reversi.utility.ActivityRouter;
 import reversi.game.basic.com.tom.reversi.utility.App;
 import reversi.game.basic.com.tom.reversi.utility.BroadcastRouter;
@@ -61,7 +62,8 @@ public class TitleScreenActivity extends AppCompatActivity
             {
                 enableButtons(false);
                 showDialog("("+ App.getIPAddress() +") Waiting for another player. Please wait...");
-                ServiceRouter.startHostService(TitleScreenActivity.this);
+//                ServiceRouter.startHostService(TitleScreenActivity.this);
+                ConnectionHandler.startHost(9000);
             }
         });
     }
@@ -98,6 +100,10 @@ public class TitleScreenActivity extends AppCompatActivity
         {
             case R.id.about:
                 new AboutDialogFragment().show(getFragmentManager(), "about");
+                return true;
+
+            case R.id.help:
+                ActivityRouter.helpScreen(this);
                 return true;
 
             default:

@@ -1,5 +1,6 @@
 package reversi.game.basic.com.tom.reversi.network;
 
+import android.graphics.Point;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -34,22 +35,17 @@ public class TCPListener implements Runnable
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             while ( (! Thread.currentThread().isInterrupted()) && ((line = in.readLine()) != null) )
             {
-                JSONObject incoming = new JSONObject(line);
-//                if (ServiceRouter.ACTION_SEND.equals(incoming.getString(COMMAND_KEY)))
+                Point p = JSONHandler.getCoordinates(line);
+                if (p != null)
                 {
-//                    int row = incoming.getInt(ROW_KEY);
-//                    int column = incoming.getInt(COLUMN_KEY);
-//                    BroadcastRouter.sendMoveFromOtherPlayer(row, column);
+                    BroadcastRouter.sendMoveFromOtherPlayer(p.x, p.y);
                 }
+                // TODO else broadcast received illegal command?
             }
         }
         catch (IOException e)
         {
 //            Log.e(CONNECTION_TAG, Log.getStackTraceString(e));
-        }
-        catch (JSONException e)
-        {
-//            Log.e(JSON_TAG, Log.getStackTraceString(e));
         }
         finally
         {

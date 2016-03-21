@@ -7,18 +7,21 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.EditText;
 
-import reversi.game.basic.com.tom.reversi.utility.ServiceRouter;
+import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
+//import reversi.game.basic.com.tom.reversi.utility.ServiceRouter;
 
 /**
  * Dialog for manually entering IP address and attempting to connect to server.
  */
 public class JoinDialogFragment extends DialogFragment
 {
+    private static final String IP_START = "192.168.1.";
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
         final EditText textView = new EditText(getActivity());
-        textView.setText("192.168.1.");
+        textView.setText(IP_START);
         return new AlertDialog.Builder(getActivity()).
                 setTitle("Join request").
                 setMessage("Pleas enter the host IP address you wish to join").
@@ -30,7 +33,8 @@ public class JoinDialogFragment extends DialogFragment
                     public void onClick(DialogInterface dialog, int which)
                     {
                         String ipAddress = textView.getText().toString();
-                        ServiceRouter.startJoinService(getActivity(), ipAddress);
+//                        ServiceRouter.startJoinService(getActivity(), ipAddress);
+                        ConnectionHandler.startJoin(ipAddress, 9000);
                     }
                 }).create();
     }
