@@ -40,6 +40,12 @@ public interface IReversiModel
     List<GameTile> getOccupiedTiles();
 
     /**
+     * Retrieves list containing tile data of all unoccupied (EMPTY) tiles.
+     * @return
+     */
+    List<GameTile> getUnoccupiedTiles();
+
+    /**
      * Method for retrieving amount of tiles occupied by player 1.
      * @return Number of tiles occupied by player 1
      */

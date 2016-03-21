@@ -1,14 +1,9 @@
 package reversi.game.basic.com.tom.reversi.activities;
 
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import reversi.game.basic.com.tom.reversi.R;
@@ -43,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     private ImageView[] playerIcons = new ImageView[2];
     private TextView[] playerScores = new TextView[2];
     private TextView currentTurnDescription;
+    private List<GamePieceView> legalTilesForThisRound = new ArrayList<>(4);
 
     private GameBoardLayout board;
     private GameBoardLayout.ITileTouchListener listener;
@@ -180,6 +177,35 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     }
 
     @Override
+    public void setLegalTiles(final List<GameTile> tiles)
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                for (GamePieceView gamePieceView : legalTilesForThisRound)
+                {
+                    gamePieceView.setBackgroundColor(Color.WHITE);
+                }
+
+                legalTilesForThisRound.clear();
+                if (! isPlayerTurn)
+                {
+                    return;
+                }
+
+                for (GameTile tile : tiles)
+                {
+                    GamePieceView view = (GamePieceView) board.getChildAt(getLinearIndex(tile.getRow(), tile.getColumn()));
+                    legalTilesForThisRound.add(view);
+                    view.setBackgroundColor(Color.GREEN);
+                }
+            }
+        });
+    }
+
+    @Override
     public void playerChange()
     {
         runOnUiThread(new Runnable()
@@ -188,8 +214,8 @@ public class MainActivity extends AppCompatActivity implements IPresentation
             public void run()
             {
                 isPlayerTurn = !isPlayerTurn;
-                board.setOnTileTouchListener( isPlayerTurn ? listener : null);
-                currentTurnDescription.setText( isPlayerTurn ? MY_TURN_DESCRIPTION : OPPONENT_TURN_DESCRIPTION);
+                board.setOnTileTouchListener(isPlayerTurn ? listener : null);
+                currentTurnDescription.setText(isPlayerTurn ? MY_TURN_DESCRIPTION : OPPONENT_TURN_DESCRIPTION);
             }
         });
     }
@@ -197,6 +223,11 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     @Override
     public void notifyIllegalMove()
     {
+        if (! isPlayerTurn)
+        {
+            return;
+        }
+
         runOnUiThread(new Runnable()
         {
             @Override
@@ -207,6 +238,24 @@ public class MainActivity extends AppCompatActivity implements IPresentation
                 board.setOnTileTouchListener(listener);
             }
         });
+    }
+
+    @Override
+    public void notifyVictory()
+    {
+        // Blank for now
+    }
+
+    @Override
+    public void notifyLoss()
+    {
+        // Blank for now
+    }
+
+    @Override
+    public void notifyTie()
+    {
+        // Blank for now
     }
 
     @Override

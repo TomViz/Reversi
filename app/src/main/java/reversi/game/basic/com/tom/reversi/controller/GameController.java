@@ -5,6 +5,7 @@ import android.graphics.Point;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -33,12 +34,13 @@ public class GameController implements IReversiController
 
     private final IReversiModel MODEL;
     private WeakReference<IPresentation> uiRef;
-    private final ExecutorService POOL = Executors.newFixedThreadPool(3);
+    private final ExecutorService POOL = Executors.newFixedThreadPool(4);
 
     private int currentPlayer; // 0 for player 1, 1 for player 2.
     private TileOccupancy[] playerType = {TileOccupancy.P1, TileOccupancy.P2};
 
-    private List<GameTile> legalMovesForThisRound = new ArrayList<>(5);
+    private List<GameTile> legalMovesForThisRound = new CopyOnWriteArrayList<>();
+    private boolean[] areNoLegalMoves = new boolean[2];
 
     public GameController(IReversiModel model)
     {
@@ -61,19 +63,20 @@ public class GameController implements IReversiController
     @Override
     public void onTileTouch(int row, int column)
     {
-        TileOccupancy tile = MODEL.getTileContent(row, column);
-        if (tile != TileOccupancy.EMPTY)
+        for (GameTile tile : legalMovesForThisRound)
         {
-            IPresentation ui = uiRef.get();
-            if (ui != null)
+            if (row == tile.getRow() && column == tile.getColumn())
             {
-                ui.notifyIllegalMove();
+                POOL.execute(new UpdateTask(row, column));
+                return;
             }
-
-            return;
         }
 
-        POOL.execute(new UpdateTask(row, column));
+        IPresentation ui = uiRef.get();
+        if (ui != null)
+        {
+            ui.notifyIllegalMove();
+        }
     }
 
     @Override
@@ -98,6 +101,31 @@ public class GameController implements IReversiController
         currentPlayer = 1 - currentPlayer;
     }
 
+    private List<GameTile> updateInDirection(int startingRow, int startingColumn, int rowDirection, int colDirection)
+    {
+        int currentRow = startingRow + rowDirection;
+        int currentColumn = startingColumn + colDirection;
+        int otherPlayer = 1 - currentPlayer;
+
+        List<GameTile> tilesToTurn = new ArrayList<>(6);
+        TileOccupancy tileType = MODEL.getTileContent(currentRow, currentColumn);
+//        while (isIndexInBounds(currentRow) && isIndexInBounds(currentColumn) && tileType == playerType[otherPlayer])
+        while (tileType == playerType[otherPlayer])
+        {
+            tilesToTurn.add(new GameTile(playerType[currentPlayer], currentRow, currentColumn));
+            currentRow += rowDirection;
+            currentColumn += colDirection;
+            tileType = MODEL.getTileContent(currentRow, currentColumn);
+        }
+
+        if (tileType != playerType[currentPlayer])
+        {
+            tilesToTurn.clear();
+        }
+
+        return tilesToTurn;
+    }
+
     private class SetupTask implements Runnable
     {
         @Override
@@ -108,6 +136,8 @@ public class GameController implements IReversiController
             {
                 return;
             }
+
+            POOL.execute(new UpdateLegalMovesTask());
 
 //            ui.clearScreen();
             ui.setTiles(MODEL.getOccupiedTiles());
@@ -133,7 +163,7 @@ public class GameController implements IReversiController
             List<GameTile> tilesToUpdate = new ArrayList<>(10);
             for (Point direction : DIRECTIONS)
             {
-                List<GameTile> directionTiles = updateInDirection(direction.x, direction.y);
+                List<GameTile> directionTiles = updateInDirection(rowIndex, columnIndex, direction.x, direction.y);
                 tilesToUpdate.addAll(directionTiles);
             }
 
@@ -152,6 +182,9 @@ public class GameController implements IReversiController
             tilesToUpdate.add(new GameTile(playerType[currentPlayer], rowIndex, columnIndex));
             MODEL.setTiles(tilesToUpdate);
             changePlayer();
+
+            POOL.execute(new UpdateLegalMovesTask());
+
             if (ui != null)
             {
                 ui.setTiles(tilesToUpdate);
@@ -161,34 +194,113 @@ public class GameController implements IReversiController
             }
         }
 
-        private List<GameTile> updateInDirection(int rowDirection, int colDirection)
-        {
-            int currentRow = rowIndex + rowDirection;
-            int currentColumn = columnIndex + colDirection;
-            int otherPlayer = 1 - currentPlayer;
-
-            List<GameTile> tilesToTurn = new ArrayList<>(6);
-            TileOccupancy tileType = MODEL.getTileContent(currentRow, currentColumn);
-//            while (isIndexInBounds(currentRow) && isIndexInBounds(currentColumn) && tileType == playerType[otherPlayer])
-            while (tileType == playerType[otherPlayer])
-            {
-                tilesToTurn.add(new GameTile(playerType[currentPlayer], currentRow, currentColumn));
-                currentRow += rowDirection;
-                currentColumn += colDirection;
-                tileType = MODEL.getTileContent(currentRow, currentColumn);
-            }
-
-            if (tileType != playerType[currentPlayer])
-            {
-                tilesToTurn.clear();
-            }
-
-            return tilesToTurn;
-        }
-
 //        private boolean isIndexInBounds(int index)
 //        {
 //            return (0 <= index && index <= getBoardSize());
 //        }
+    }
+
+    private class UpdateLegalMovesTask implements Runnable
+    {
+        @Override
+        public void run()
+        {
+            legalMovesForThisRound.clear();
+
+            List<GameTile> tiles = MODEL.getUnoccupiedTiles();
+            for (GameTile tile : tiles)
+            {
+                addTileIfLegal(tile);
+            }
+
+            if (! legalMovesForThisRound.isEmpty())
+            {
+                markIllegalMoves();
+            }
+            else
+            {
+                areNoLegalMoves[currentPlayer] = true;
+                if (areNoLegalMoves[1 - currentPlayer])
+                {
+                    finishGame();
+                }
+                else
+                {
+                    passTurn();
+                }
+            }
+        }
+
+        private void passTurn()
+        {
+            changePlayer();
+            IPresentation ui = uiRef.get();
+            if (ui != null)
+            {
+                ui.playerChange();
+            }
+            run();
+        }
+
+        private void finishGame()
+        {
+            int p1Tiles = MODEL.getNumOfP1Tiles();
+            int p2Tiles = MODEL.getNumOfP2Tiles();
+
+            IPresentation ui = uiRef.get();
+            if (ui == null)
+            {
+                return;
+            }
+
+            if (p1Tiles == p2Tiles)
+            {
+                ui.notifyTie();
+            }
+            else if (p1Tiles > p2Tiles)
+            {
+                determineResult(ui, 0);
+            }
+            else
+            {
+                determineResult(ui, 1);
+            }
+        }
+
+        private void determineResult(IPresentation ui, int playerIndex)
+        {
+            if (currentPlayer == playerIndex)
+            {
+                ui.notifyVictory();
+            }
+            else
+            {
+                ui.notifyLoss();
+            }
+        }
+
+        private void markIllegalMoves()
+        {
+            areNoLegalMoves[0] = false;
+            areNoLegalMoves[1] = false;
+            IPresentation ui = uiRef.get();
+            if (ui != null)
+            {
+                ui.setLegalTiles(legalMovesForThisRound);
+            }
+        }
+
+        private void addTileIfLegal(GameTile tile)
+        {
+            for (Point direction : DIRECTIONS)
+            {
+                List<GameTile> tilesPerCoordinate = updateInDirection(tile.getRow(), tile.getColumn(), direction.x, direction.y);
+                if (! tilesPerCoordinate.isEmpty())
+                {
+                    legalMovesForThisRound.add(tile);
+                    break;
+                }
+            }
+        }
     }
 }

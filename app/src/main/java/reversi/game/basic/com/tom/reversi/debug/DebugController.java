@@ -110,6 +110,8 @@ public class DebugController implements IReversiController
 
 //            ui.clearScreen();
             ui.setTiles(MODEL.getOccupiedTiles());
+            ui.setNumberOfPlayer1Tiles(MODEL.getNumOfP1Tiles());
+            ui.setNumberOfPlayer2Tiles(MODEL.getNumOfP2Tiles());
         }
     }
 
@@ -153,6 +155,8 @@ public class DebugController implements IReversiController
             {
                 ui.setTiles(tilesToUpdate);
                 ui.playerChange();
+                ui.setNumberOfPlayer1Tiles(MODEL.getNumOfP1Tiles());
+                ui.setNumberOfPlayer2Tiles(MODEL.getNumOfP2Tiles());
             }
         }
 

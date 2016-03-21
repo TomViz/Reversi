@@ -112,6 +112,20 @@ public class GameBoardModel implements IReversiModel
     }
 
     @Override
+    public List<GameTile> getUnoccupiedTiles()
+    {
+        int numOfColumns = board.size();
+        List<GameTile> emptyTiles = new ArrayList<>(numOfColumns * numOfColumns / 2 - 4);
+
+        for (int i = 0; i < numOfColumns; ++i)
+        {
+            addUnoccupiedInColumn(emptyTiles, i);
+        }
+
+        return emptyTiles;
+    }
+
+    @Override
     public int getNumOfP1Tiles()
     {
         return numOfP1Tiles;
@@ -153,6 +167,21 @@ public class GameBoardModel implements IReversiModel
             if (typeInCell != TileOccupancy.EMPTY)
             {
                 occupied.add(new GameTile(typeInCell, j, columnIndex));
+            }
+        }
+    }
+
+    private void addUnoccupiedInColumn(List<GameTile> unoccupied, int columnIndex)
+    {
+        List<TileOccupancy> row = board.get(columnIndex);
+        int numOfRows = row.size();
+
+        for (int j = 0; j < numOfRows; ++j)
+        {
+            TileOccupancy typeInCell = row.get(j);
+            if (typeInCell == TileOccupancy.EMPTY)
+            {
+                unoccupied.add(new GameTile(typeInCell, j, columnIndex));
             }
         }
     }

@@ -8,8 +8,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import reversi.game.basic.com.tom.reversi.R;
@@ -19,6 +23,7 @@ import reversi.game.basic.com.tom.reversi.fragments.AboutDialogFragment;
 import reversi.game.basic.com.tom.reversi.game_board.GameBoardLayout;
 import reversi.game.basic.com.tom.reversi.game_board.GamePieceView;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
+import reversi.game.basic.com.tom.reversi.game_board.TileOccupancy;
 import reversi.game.basic.com.tom.reversi.utility.App;
 import reversi.game.basic.com.tom.reversi.utility.PlayerIconContainer;
 import reversi.game.basic.com.tom.reversi.utility.ShakeListener;
@@ -28,9 +33,18 @@ import reversi.game.basic.com.tom.reversi.utility.ShakeListener;
  */
 public class OfflineMainActivity extends AppCompatActivity implements IPresentation
 {
-    private int boardSize;
+    private static final String P1_TURN_DESCRIPTION = "Putin's turn";
+    private static final String P2_TURN_DESCRIPTION = "Obama's turn";
+
     private GameBoardLayout board;
     private IReversiController controller;
+    private int boardSize;
+    private boolean isPlayerTurn;
+    private List<GamePieceView> legalTilesForThisRound = new ArrayList<>(4);
+
+    private ImageView[] playerIcons = new ImageView[2];
+    private TextView[] playerScores = new TextView[2];
+    private TextView currentTurnDescription;
 
     private SensorManager sensorMgr;
     private Sensor accelerometer;
@@ -60,11 +74,15 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
 
         board = (GameBoardLayout) findViewById(R.id.gameBoard);
         controller = App.getController(this);
+        findViews();
 
         boardSize = controller.getBoardSize();
         board.setColumnCount(boardSize);
         board.setRowCount(boardSize);
 //        board.setUseDefaultMargins(true);
+
+        isPlayerTurn = true;
+        currentTurnDescription.setText(P1_TURN_DESCRIPTION);
 
         for (int i = 0; i < boardSize; ++i)
         {
@@ -84,7 +102,6 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
                 controller.onTileTouch(row, col);
             }
         });
-
     }
 
     @Override
@@ -145,9 +162,42 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
     }
 
     @Override
+    public void setLegalTiles(final List<GameTile> tiles)
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                for (GamePieceView gamePieceView : legalTilesForThisRound)
+                {
+                    gamePieceView.setBackgroundColor(Color.WHITE);
+                }
+
+                legalTilesForThisRound.clear();
+
+                for (GameTile tile : tiles)
+                {
+                    GamePieceView view = (GamePieceView) board.getChildAt(getLinearIndex(tile.getRow(), tile.getColumn()));
+                    legalTilesForThisRound.add(view);
+                    view.setBackgroundColor(Color.GREEN);
+                }
+            }
+        });
+    }
+
+    @Override
     public void playerChange()
     {
-        // Intentionally left blank
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                isPlayerTurn = !isPlayerTurn;
+                currentTurnDescription.setText( isPlayerTurn ? P1_TURN_DESCRIPTION : P2_TURN_DESCRIPTION);
+            }
+        });
     }
 
     @Override
@@ -165,15 +215,60 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
     }
 
     @Override
+    public void notifyVictory()
+    {
+        // Blank for now
+    }
+
+    @Override
+    public void notifyLoss()
+    {
+        // Blank for now
+    }
+
+    @Override
+    public void notifyTie()
+    {
+        // Blank for now
+    }
+
+    @Override
     public void setNumberOfPlayer1Tiles(int numOfTiles)
     {
-        // Blank
+        changePlayerScore(0, numOfTiles);
     }
 
     @Override
     public void setNumberOfPlayer2Tiles(int numOfTiles)
     {
-        // Blank
+        changePlayerScore(1, numOfTiles);
+    }
+
+    private void changePlayerScore(final int playerIndex, final int numOfTiles)
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                playerScores[playerIndex].setText(String.valueOf(numOfTiles));
+            }
+        });
+    }
+
+    private void findViews()
+    {
+        View playerOneLayout = findViewById(R.id.playerOneStats);
+        playerIcons[0] = (ImageView) playerOneLayout.findViewById(R.id.playerImage);
+        playerIcons[0].setImageBitmap(PlayerIconContainer.getIcon(TileOccupancy.P1));
+        playerScores[0] = (TextView) playerOneLayout.findViewById(R.id.playerScore);
+
+        View playerTwoLayout = findViewById(R.id.playerTwoStats);
+        playerIcons[1] = (ImageView) playerTwoLayout.findViewById(R.id.playerImage);
+        playerIcons[1].setImageBitmap(PlayerIconContainer.getIcon(TileOccupancy.P2));
+        playerScores[1] = (TextView) playerTwoLayout.findViewById(R.id.playerScore);
+
+        currentTurnDescription = (TextView) findViewById(R.id.turnDescription);
     }
 
     private int getLinearIndex(int row, int col)
