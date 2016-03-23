@@ -14,10 +14,12 @@ import java.util.concurrent.Executors;
  */
 public final class ControllerBus
 {
-    private final Map<Events, List<IReversiController>> EVENTS = new ConcurrentHashMap<>(1);
-    private final ExecutorService POOL = Executors.newFixedThreadPool(3);
+    private static final String EVENT_TAG = "Event";
 
-    public void register(final IReversiController controller, final Events event)
+    private static final Map<EventTypes, List<IReversiController>> EVENTS = new ConcurrentHashMap<>(1);
+    private static final ExecutorService POOL = Executors.newFixedThreadPool(3);
+
+    public static void register(final IReversiController controller, final EventTypes event)
     {
         POOL.execute(new Runnable()
         {
@@ -36,7 +38,7 @@ public final class ControllerBus
         });
     }
 
-    public void unregister(final IReversiController controller, final Events event)
+    public static void unregister(final IReversiController controller, final EventTypes event)
     {
         POOL.execute(new Runnable()
         {
@@ -52,28 +54,24 @@ public final class ControllerBus
         });
     }
 
-    /**
-     * Send coordinates to controllers registered under the "MESSAGE_SEND" event.
-     * @param row row coordinate
-     * @param column column coordinate
-     */
-    public void passCoordinates(final int row, final int column)
+    public static void sendEvent(final Event event)
     {
         POOL.execute(new Runnable()
         {
             @Override
             public void run()
             {
-                List<IReversiController> controllers = EVENTS.get(Events.MESSAGE_SEND);
+                List<IReversiController> controllers = EVENTS.get(event.getType());
                 if (controllers == null)
                 {
                     return;
                 }
 
-                Log.d("Receiver", "Opponent has touched row " + row + " and column " + column);
+//                Log.d("Receiver", "Opponent has touched row " + row + " and column " + column);
+                Log.d(EVENT_TAG, "Received an event!");
                 for (IReversiController controller : controllers)
                 {
-                    controller.onTileTouch(row, column);
+                    controller.onEvent(event);
                 }
             }
         });

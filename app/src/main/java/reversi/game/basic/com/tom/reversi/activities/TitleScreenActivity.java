@@ -19,6 +19,7 @@ import reversi.game.basic.com.tom.reversi.R;
 import reversi.game.basic.com.tom.reversi.fragments.AboutDialogFragment;
 import reversi.game.basic.com.tom.reversi.fragments.JoinDialogFragment;
 import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
+import reversi.game.basic.com.tom.reversi.network.ConnectionTypes;
 import reversi.game.basic.com.tom.reversi.utility.ActivityRouter;
 import reversi.game.basic.com.tom.reversi.utility.App;
 import reversi.game.basic.com.tom.reversi.utility.BroadcastRouter;
@@ -62,7 +63,8 @@ public class TitleScreenActivity extends AppCompatActivity
                 enableButtons(false);
                 showDialog("("+ App.getIPAddress() +") Waiting for another player. Please wait...");
 //                ServiceRouter.startHostService(TitleScreenActivity.this);
-                ConnectionHandler.startHost(9000);
+//                ConnectionHandler.startHost();
+                ConnectionHandler.startConnection(ConnectionTypes.HOST, null);
             }
         });
     }

@@ -3,7 +3,7 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              android:id="@+id/boardFragment"
-             tools:context="reversi.game.basic.com.tom.reversi.fragments.BoardFragment">
+             tools:context=".activities.BoardFragment">
 
     <GridLayout
         android:layout_width="match_parent"

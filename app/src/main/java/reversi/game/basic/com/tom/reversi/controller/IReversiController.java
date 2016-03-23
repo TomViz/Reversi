@@ -1,7 +1,7 @@
 package reversi.game.basic.com.tom.reversi.controller;
 
 /**
- * Created by Tom Vizel on 15/03/2016.
+ * Interface for interacting with the game's controller unit.
  */
 public interface IReversiController
 {
@@ -11,11 +11,10 @@ public interface IReversiController
     void setup();
 
     /**
-     * Perform action when a specific tile is touched.
-     * @param row Row index of selected tile [0..n]
-     * @param column Column index of selected tile [0..n]
+     * Handles incoming events.
+     * @param event Incoming event.
      */
-    void onTileTouch(int row, int column);
+    void onEvent(Event event);
 
     /**
      * Retrieves size of symmetrical board (Equal number of rows and columns).

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import reversi.game.basic.com.tom.reversi.activities.MainActivity;
+import reversi.game.basic.com.tom.reversi.activities.TitleScreenActivity;
+import reversi.game.basic.com.tom.reversi.debug.OfflineMainActivity;
 import reversi.game.basic.com.tom.reversi.help.HelpActivity;
 
 /**
@@ -11,18 +13,28 @@ import reversi.game.basic.com.tom.reversi.help.HelpActivity;
  */
 public final class ActivityRouter
 {
-    public static final String WHO_IS_FIRST_KEY = "FIRST";
-
     public static void startGame(Context context, boolean isFirst)
     {
         Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(WHO_IS_FIRST_KEY, isFirst);
+        intent.putExtra(MainActivity.WHO_IS_FIRST_KEY, isFirst);
         context.startActivity(intent);
     }
 
     public static void helpScreen(Context context)
     {
         Intent intent = new Intent(context, HelpActivity.class);
+        context.startActivity(intent);
+    }
+
+    public static void returnToTitleScreen(Context context)
+    {
+        Intent intent = new Intent(context, TitleScreenActivity.class);
+        context.startActivity(intent);
+    }
+
+    public static void startSinglePlayer(Context context)
+    {
+        Intent intent = new Intent(context, OfflineMainActivity.class);
         context.startActivity(intent);
     }
 }

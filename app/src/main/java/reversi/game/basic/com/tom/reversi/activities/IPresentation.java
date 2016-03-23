@@ -5,7 +5,7 @@ import java.util.List;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
 
 /**
- * Created by Tom Vizel on 14/03/2016.
+ * Interface for interacting with the UI.
  */
 public interface IPresentation
 {
@@ -20,6 +20,12 @@ public interface IPresentation
      * @param tiles Tiles containing legal coordinates to mark.
      */
     void setLegalTiles(List<GameTile> tiles);
+
+    /**
+     * Displays the (legal) move that is being played.
+     * @param tile Tile containing coordinates and player.
+     */
+    void displayCurrentMove(GameTile tile);
 
     /**
      * Notify that the currently active player has changed.

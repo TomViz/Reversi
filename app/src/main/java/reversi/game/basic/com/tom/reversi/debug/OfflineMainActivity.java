@@ -1,7 +1,6 @@
 package reversi.game.basic.com.tom.reversi.debug;
 
 import android.app.AlertDialog;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -13,15 +12,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import reversi.game.basic.com.tom.reversi.R;
+import reversi.game.basic.com.tom.reversi.activities.BoardFragment;
 import reversi.game.basic.com.tom.reversi.activities.IPresentation;
 import reversi.game.basic.com.tom.reversi.controller.IReversiController;
 import reversi.game.basic.com.tom.reversi.fragments.AboutDialogFragment;
-import reversi.game.basic.com.tom.reversi.game_board.GameBoardLayout;
-import reversi.game.basic.com.tom.reversi.game_board.GamePieceView;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
 import reversi.game.basic.com.tom.reversi.game_board.TileOccupancy;
 import reversi.game.basic.com.tom.reversi.utility.App;
@@ -36,11 +33,9 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
     private static final String P1_TURN_DESCRIPTION = "Putin's turn";
     private static final String P2_TURN_DESCRIPTION = "Obama's turn";
 
-    private GameBoardLayout board;
+    private BoardFragment board;
     private IReversiController controller;
-    private int boardSize;
     private boolean isPlayerTurn;
-    private List<GamePieceView> legalTilesForThisRound = new ArrayList<>(4);
 
     private ImageView[] playerIcons = new ImageView[2];
     private TextView[] playerScores = new TextView[2];
@@ -72,36 +67,14 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
             }
         });
 
-        board = (GameBoardLayout) findViewById(R.id.gameBoard);
+
+        board = new BoardFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.customBoardLayout, board).addToBackStack(null).commit();
         controller = App.getController(this);
         findViews();
 
-        boardSize = controller.getBoardSize();
-        board.setColumnCount(boardSize);
-        board.setRowCount(boardSize);
-//        board.setUseDefaultMargins(true);
-
         isPlayerTurn = true;
         currentTurnDescription.setText(P1_TURN_DESCRIPTION);
-
-        for (int i = 0; i < boardSize; ++i)
-        {
-            for (int j = 0; j < boardSize; ++j)
-            {
-                GamePieceView piece = new GamePieceView(this, i, j);
-                piece.setBackgroundColor(Color.WHITE);
-                board.addView(piece);
-            }
-        }
-
-        board.setOnTileTouchListener(new GameBoardLayout.ITileTouchListener()
-        {
-            @Override
-            public void onTileTouch(int row, int col)
-            {
-                controller.onTileTouch(row, col);
-            }
-        });
     }
 
     @Override
@@ -109,6 +82,7 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
     {
         super.onResume();
         sensorMgr.registerListener(shakeListener, accelerometer, SensorManager.SENSOR_DELAY_UI);
+        App.register(controller);
         controller.setup();
     }
 
@@ -116,6 +90,7 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
     protected void onPause()
     {
         sensorMgr.unregisterListener(shakeListener);
+        App.unregister(controller);
         super.onPause();
     }
 
@@ -152,11 +127,7 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
             @Override
             public void run()
             {
-                for (GameTile tile : tiles)
-                {
-                    GamePieceView view = (GamePieceView) board.getChildAt(getLinearIndex(tile.getRow(), tile.getColumn()));
-                    view.setImageBitmap(PlayerIconContainer.getIcon(tile.getPlayer()));
-                }
+                board.setTiles(tiles);
             }
         });
     }
@@ -169,21 +140,16 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
             @Override
             public void run()
             {
-                for (GamePieceView gamePieceView : legalTilesForThisRound)
-                {
-                    gamePieceView.setBackgroundColor(Color.WHITE);
-                }
-
-                legalTilesForThisRound.clear();
-
-                for (GameTile tile : tiles)
-                {
-                    GamePieceView view = (GamePieceView) board.getChildAt(getLinearIndex(tile.getRow(), tile.getColumn()));
-                    legalTilesForThisRound.add(view);
-                    view.setBackgroundColor(Color.GREEN);
-                }
+                board.clearLegalTiles();
+                board.setLegalTiles(tiles);
             }
         });
+    }
+
+    @Override
+    public void displayCurrentMove(GameTile tile)
+    {
+        // Intentionally blank.
     }
 
     @Override
@@ -195,7 +161,7 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
             public void run()
             {
                 isPlayerTurn = !isPlayerTurn;
-                currentTurnDescription.setText( isPlayerTurn ? P1_TURN_DESCRIPTION : P2_TURN_DESCRIPTION);
+                currentTurnDescription.setText(isPlayerTurn ? P1_TURN_DESCRIPTION : P2_TURN_DESCRIPTION);
             }
         });
     }
@@ -217,19 +183,41 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
     @Override
     public void notifyVictory()
     {
-        // Blank for now
+        offlineResult();
     }
 
     @Override
     public void notifyLoss()
     {
-        // Blank for now
+        offlineResult();
+    }
+
+    private void offlineResult()
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                String message = (isPlayerTurn) ? "Putin is the winner!" : "Obama is the winner!";
+                Toast toast = Toast.makeText(OfflineMainActivity.this, message, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
     }
 
     @Override
     public void notifyTie()
     {
-        // Blank for now
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Toast toast = Toast.makeText(OfflineMainActivity.this, "A tie! Well that's rare...", Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
     }
 
     @Override
@@ -269,10 +257,5 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
         playerScores[1] = (TextView) playerTwoLayout.findViewById(R.id.playerScore);
 
         currentTurnDescription = (TextView) findViewById(R.id.turnDescription);
-    }
-
-    private int getLinearIndex(int row, int col)
-    {
-        return ( (row * boardSize) + col );
     }
 }

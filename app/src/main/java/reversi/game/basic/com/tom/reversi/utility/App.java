@@ -11,10 +11,12 @@ import java.nio.ByteOrder;
 
 import reversi.game.basic.com.tom.reversi.activities.IPresentation;
 import reversi.game.basic.com.tom.reversi.controller.ControllerBus;
-import reversi.game.basic.com.tom.reversi.controller.Events;
+import reversi.game.basic.com.tom.reversi.controller.EventTypes;
 import reversi.game.basic.com.tom.reversi.controller.GameController;
 import reversi.game.basic.com.tom.reversi.controller.IReversiController;
 import reversi.game.basic.com.tom.reversi.game_board.GameBoardModel;
+import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
+import reversi.game.basic.com.tom.reversi.network.DummyConnection;
 
 /**
  * Application class for keeping singleton key components.
@@ -36,7 +38,7 @@ public final class App extends Application
         return INSTANCE;
     }
 
-    public static IReversiController getController(IPresentation ui)
+    public static IReversiController getController(IPresentation ui, boolean isOnline)
     {
         if (CONTROLLER == null)
         {
@@ -44,10 +46,11 @@ public final class App extends Application
         }
 
         CONTROLLER.attach(ui);
+        CONTROLLER.setPlayer(isOnline ? ConnectionHandler.getConnection() : new DummyConnection());
         return CONTROLLER;
     }
 
-    private static GameBoardModel getModel()
+    public static GameBoardModel getModel()
     {
         if (MODEL == null)
         {
@@ -64,22 +67,16 @@ public final class App extends Application
             BUS = new ControllerBus();
         }
 
-        BUS.register(controller, Events.MESSAGE_SEND);
+        BUS.register(controller, EventTypes.MESSAGE_SEND);
+        BUS.register(controller, EventTypes.DISCONNECTION);
     }
 
     public static void unregister(IReversiController controller)
     {
         if (BUS != null)
         {
-            BUS.unregister(controller, Events.MESSAGE_SEND);
-        }
-    }
-
-    public static void sendCoordinates(int row, int column)
-    {
-        if (BUS != null)
-        {
-            BUS.passCoordinates(row, column);
+            BUS.unregister(controller, EventTypes.MESSAGE_SEND);
+            BUS.unregister(controller, EventTypes.DISCONNECTION);
         }
     }
 

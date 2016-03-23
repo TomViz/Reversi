@@ -140,7 +140,15 @@ public class GameBoardModel implements IReversiModel
     @Override
     public void cleanBoard()
     {
-        board.clear();
+        int dimension = board.size();
+        for (int i = 0; i < dimension; ++i)
+        {
+            for (int j = 0; j < dimension; ++j)
+            {
+                board.get(i).set(j, TileOccupancy.EMPTY);
+            }
+        }
+
         numOfP1Tiles = 0;
         numOfP2Tiles = 0;
     }

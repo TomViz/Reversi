@@ -1,7 +1,9 @@
 package reversi.game.basic.com.tom.reversi.controller;
 
 import android.graphics.Point;
+import android.util.Log;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +15,15 @@ import reversi.game.basic.com.tom.reversi.activities.IPresentation;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
 import reversi.game.basic.com.tom.reversi.game_board.IReversiModel;
 import reversi.game.basic.com.tom.reversi.game_board.TileOccupancy;
+import reversi.game.basic.com.tom.reversi.network.IConnection;
 
 /**
  * Controller for Reversi game
  */
 public class GameController implements IReversiController
 {
+    private static final String TAG = "Controller";
+
     private static final List<Point> DIRECTIONS = new ArrayList<>(8);
     static
     {
@@ -32,8 +37,9 @@ public class GameController implements IReversiController
         DIRECTIONS.add(new Point(1, 1));
     }
 
-    private final IReversiModel MODEL;
     private WeakReference<IPresentation> uiRef;
+    private IConnection player;
+    private final IReversiModel MODEL;
     private final ExecutorService POOL = Executors.newFixedThreadPool(4);
 
     private int currentPlayer; // 0 for player 1, 1 for player 2.
@@ -54,6 +60,11 @@ public class GameController implements IReversiController
         this.uiRef = new WeakReference<>(ui);
     }
 
+    public void setPlayer(IConnection player)
+    {
+        this.player = player;
+    }
+
     @Override
     public void setup()
     {
@@ -61,13 +72,49 @@ public class GameController implements IReversiController
     }
 
     @Override
-    public void onTileTouch(int row, int column)
+    public void onEvent(final Event event)
+    {
+        POOL.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (event == null)
+                {
+                    Log.e(TAG, "Null event received");
+                    return;
+                }
+
+                switch(event.getType())
+                {
+                    case MESSAGE_SEND:
+                        onTileTouch(event.getRow(), event.getColumn());
+                        break;
+
+                    case DISCONNECTION:
+                        onDisconnect();
+                        break;
+
+                    default:
+                        Log.e(TAG, "Unknown event type");
+                        break;
+                }
+            }
+        });
+    }
+
+    /**
+     * Perform action when a specific tile is touched.
+     * @param row Row index of selected tile [0..n]
+     * @param column Column index of selected tile [0..n]
+     */
+    private void onTileTouch(int row, int column)
     {
         for (GameTile tile : legalMovesForThisRound)
         {
-            if (row == tile.getRow() && column == tile.getColumn())
+            if (isTileLegal(row, column, tile))
             {
-                POOL.execute(new UpdateTask(row, column));
+                player.sendCoordinates(row, column);
                 return;
             }
         }
@@ -77,6 +124,42 @@ public class GameController implements IReversiController
         {
             ui.notifyIllegalMove();
         }
+    }
+
+    private void onDisconnect()
+    {
+        try
+        {
+            player.close();
+        }
+        catch (IOException e)
+        {
+            Log.e(TAG, Log.getStackTraceString(e));
+        }
+    }
+
+    /**
+     * Checks if tile is legal and performs the move if true.
+     * @param row Row index of selected tile.
+     * @param column Column Index of selected tile.
+     * @param tile Tile containing one of the possible legal moves for this round.
+     * @return True if the selected tile was legal and the action was performed, false otherwise.
+     */
+    private boolean isTileLegal(int row, int column, GameTile tile)
+    {
+        if (row == tile.getRow() && column == tile.getColumn())
+        {
+            POOL.execute(new UpdateTask(row, column));
+            IPresentation ui = uiRef.get();
+            if (ui != null)
+            {
+                ui.displayCurrentMove(tile);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -131,13 +214,13 @@ public class GameController implements IReversiController
         @Override
         public void run()
         {
+            POOL.execute(new UpdateLegalMovesTask());
+
             IPresentation ui = uiRef.get();
             if (ui == null)
             {
                 return;
             }
-
-            POOL.execute(new UpdateLegalMovesTask());
 
 //            ui.clearScreen();
             ui.setTiles(MODEL.getOccupiedTiles());
@@ -277,6 +360,11 @@ public class GameController implements IReversiController
             {
                 ui.notifyLoss();
             }
+
+            areNoLegalMoves[0] = false;
+            areNoLegalMoves[1] = false;
+            MODEL.cleanBoard();
+            setStartingTiles();
         }
 
         private void markIllegalMoves()

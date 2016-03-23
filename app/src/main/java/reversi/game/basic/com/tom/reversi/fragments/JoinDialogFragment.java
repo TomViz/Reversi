@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.widget.EditText;
 
 import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
+import reversi.game.basic.com.tom.reversi.network.ConnectionTypes;
 //import reversi.game.basic.com.tom.reversi.trash.ServiceRouter;
 
 /**
@@ -34,7 +35,8 @@ public class JoinDialogFragment extends DialogFragment
                     {
                         String ipAddress = textView.getText().toString();
 //                        ServiceRouter.startJoinService(getActivity(), ipAddress);
-                        ConnectionHandler.startJoin(ipAddress, 9000);
+//                        ConnectionHandler.startJoin(ipAddress);
+                        ConnectionHandler.startConnection(ConnectionTypes.JOIN, ipAddress);
                     }
                 }).create();
     }

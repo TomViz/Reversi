@@ -13,13 +13,20 @@ import reversi.game.basic.com.tom.reversi.utility.BroadcastRouter;
  */
 public final class ConnectionHandler
 {
-    private static final String HOST_TAG = "Host";
-    private static final String JOIN_TAG = "Join";
+    private static final String NEW_CONNECT_TAG = "Connect";
+    private static final String SEND_TAG = "Send";
+
+    private static final int PORT = 9000;
 
     private static IConnection connection;
     private static final ExecutorService POOL = Executors.newFixedThreadPool(2);
 
-    public static void startHost(final int port)
+    /**
+     * Factory method for starting a new connection.
+     * @param type Type of connection that needs to be established.
+     * @param ip IP Address to join. Note that this parameter is ignored if "Host" connection is requested.
+     */
+    public static void startConnection(final ConnectionTypes type, final String ip)
     {
         POOL.execute(new Runnable()
         {
@@ -33,44 +40,34 @@ public final class ConnectionHandler
                         connection.close();
                     }
 
-                    connection = new HostConnection(port);
+                    switch(type)
+                    {
+                        case HOST:
+                            connection = new HostConnection(PORT);
+                            break;
+                        case JOIN:
+                            connection = new JoinConnection(ip, PORT);
+                            break;
+                        default:
+                            Log.e(NEW_CONNECT_TAG, "Unknown connection request type");
+                            throw new IOException();
+                    }
+
                     connection.start();
-                    BroadcastRouter.sendToTitleScreen(BroadcastRouter.START_FIRST);
+                    BroadcastRouter.sendToTitleScreen(type.getBroadcastTarget());
                 }
                 catch (IOException e)
                 {
-                    Log.e(HOST_TAG, "Failed to initiate host service");
+                    Log.e(NEW_CONNECT_TAG, "Failed to initiate connection service");
                     BroadcastRouter.sendToTitleScreen(BroadcastRouter.START_FAILED);
                 }
             }
         });
     }
 
-    public static void startJoin(final String ip, final int port)
+    public static IConnection getConnection()
     {
-        POOL.execute(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                try
-                {
-                    if (connection != null)
-                    {
-                        connection.close();
-                    }
-
-                    connection = new JoinConnection(ip, port);
-                    connection.start();
-                    BroadcastRouter.sendToTitleScreen(BroadcastRouter.START_SECOND);
-                }
-                catch (IOException e)
-                {
-                    Log.e(JOIN_TAG, "Failed to initiate host service");
-                    BroadcastRouter.sendToTitleScreen(BroadcastRouter.START_FAILED);
-                }
-            }
-        });
+        return connection;
     }
 
     public static void sendCommand(final int row, final int column)
@@ -83,6 +80,7 @@ public final class ConnectionHandler
                 if (connection == null)
                 {
                     // TODO Broadcast "message sending failed"
+                    Log.d(SEND_TAG, "Bla bla bla");
                 }
 
                 connection.sendCoordinates(row, column);
