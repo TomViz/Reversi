@@ -1,4 +1,4 @@
-package reversi.game.basic.com.tom.reversi.debug;
+package reversi.game.basic.com.tom.reversi.activities;
 
 import android.app.AlertDialog;
 import android.hardware.Sensor;
@@ -15,8 +15,6 @@ import android.widget.Toast;
 import java.util.List;
 
 import reversi.game.basic.com.tom.reversi.R;
-import reversi.game.basic.com.tom.reversi.activities.BoardFragment;
-import reversi.game.basic.com.tom.reversi.activities.IPresentation;
 import reversi.game.basic.com.tom.reversi.controller.IReversiController;
 import reversi.game.basic.com.tom.reversi.fragments.AboutDialogFragment;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
@@ -70,7 +68,7 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
 
         board = new BoardFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.customBoardLayout, board).addToBackStack(null).commit();
-        controller = App.getController(this);
+        controller = App.getController(this, false);
         findViews();
 
         isPlayerTurn = true;
@@ -218,6 +216,12 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
                 toast.show();
             }
         });
+    }
+
+    @Override
+    public void notifyError()
+    {
+        // Intentionally blank.
     }
 
     @Override

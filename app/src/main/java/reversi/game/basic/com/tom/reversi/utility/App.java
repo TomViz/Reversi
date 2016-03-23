@@ -26,7 +26,6 @@ public final class App extends Application
     private static App INSTANCE;
     private static GameBoardModel MODEL;
     private static GameController CONTROLLER;
-    private static ControllerBus BUS;
 
     public App()
     {
@@ -62,22 +61,14 @@ public final class App extends Application
 
     public static void register(IReversiController controller)
     {
-        if (BUS == null)
-        {
-            BUS = new ControllerBus();
-        }
-
-        BUS.register(controller, EventTypes.MESSAGE_SEND);
-        BUS.register(controller, EventTypes.DISCONNECTION);
+        ControllerBus.register(controller, EventTypes.MESSAGE_SEND);
+        ControllerBus.register(controller, EventTypes.DISCONNECTION);
     }
 
     public static void unregister(IReversiController controller)
     {
-        if (BUS != null)
-        {
-            BUS.unregister(controller, EventTypes.MESSAGE_SEND);
-            BUS.unregister(controller, EventTypes.DISCONNECTION);
-        }
+        ControllerBus.unregister(controller, EventTypes.MESSAGE_SEND);
+        ControllerBus.unregister(controller, EventTypes.DISCONNECTION);
     }
 
     /**

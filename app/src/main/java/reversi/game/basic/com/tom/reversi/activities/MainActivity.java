@@ -20,6 +20,7 @@ import reversi.game.basic.com.tom.reversi.fragments.AboutDialogFragment;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
 import reversi.game.basic.com.tom.reversi.game_board.TileOccupancy;
 import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
+import reversi.game.basic.com.tom.reversi.utility.ActivityRouter;
 import reversi.game.basic.com.tom.reversi.utility.App;
 import reversi.game.basic.com.tom.reversi.utility.PlayerIconContainer;
 import reversi.game.basic.com.tom.reversi.utility.ShakeListener;
@@ -35,10 +36,6 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     private TextView[] playerScores = new TextView[2];
     private TextView currentTurnDescription;
 
-//    private List<GamePieceView> legalTilesForThisRound = new ArrayList<>(4);
-//    private GameBoardLayout board;
-//    private GameBoardLayout.ITileTouchListener listener;
-//    private int boardSize;
     private BoardFragment board;
 
     private IReversiController controller;
@@ -47,8 +44,6 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     private SensorManager sensorMgr;
     private Sensor accelerometer;
     private ShakeListener shakeListener = new ShakeListener();
-
-//    private OpponentCommandReceiver receiver = new OpponentCommandReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -72,45 +67,13 @@ public class MainActivity extends AppCompatActivity implements IPresentation
             }
         });
 
-        controller = App.getController(this);
-//        board = (GameBoardLayout) findViewById(R.id.gameBoard);
+        controller = App.getController(this, true);
         board = new BoardFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.customBoardLayout, board).addToBackStack(null).commit();
         findViews();
 
-//        boardSize = controller.getBoardSize();
-//        board.setColumnCount(boardSize);
-//        board.setRowCount(boardSize);
-//        board.setUseDefaultMargins(true);
-
-//        for (int i = 0; i < boardSize; ++i)
-//        {
-//            for (int j = 0; j < boardSize; ++j)
-//            {
-//                GamePieceView piece = new GamePieceView(this, i, j);
-//                piece.setBackgroundColor(Color.WHITE);
-//                board.addView(piece);
-//            }
-//        }
-
         isPlayerTurn = getIntent().getBooleanExtra(WHO_IS_FIRST_KEY, true);
         currentTurnDescription.setText( isPlayerTurn ? MY_TURN_DESCRIPTION : OPPONENT_TURN_DESCRIPTION);
-
-//        listener = new GameBoardLayout.ITileTouchListener()
-//        {
-//            @Override
-//            public void onTileTouch(int row, int col)
-//            {
-//                board.setOnTileTouchListener(null);
-//                controller.onTileTouch(row, col);
-//                Log.d("Listener", "User has touched row #" + row + " and column #" + col);
-////                ServiceRouter.startSendService(MainActivity.this, row, col);
-//                ConnectionHandler.sendCommand(row, col);
-//            }
-//        };
-//
-//        board.setOnTileTouchListener( isPlayerTurn ? listener : null);
-
     }
 
     @Override
@@ -118,8 +81,6 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     {
         super.onResume();
         sensorMgr.registerListener(shakeListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
-//        IntentFilter filter = new IntentFilter(BroadcastRouter.MOVE_SEND);
-//        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         App.register(controller);
         board.enableTileTouchListener(isPlayerTurn);
         controller.setup();
@@ -129,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     protected void onPause()
     {
         sensorMgr.unregisterListener(shakeListener);
-//        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         App.unregister(controller);
         super.onPause();
     }
@@ -166,11 +126,6 @@ public class MainActivity extends AppCompatActivity implements IPresentation
             @Override
             public void run()
             {
-//                for (GameTile tile : tiles)
-//                {
-//                    GamePieceView view = (GamePieceView) board.getChildAt(getLinearIndex(tile.getRow(), tile.getColumn()));
-//                    view.setImageBitmap(PlayerIconContainer.getIcon(tile.getPlayer()));
-//                }
                 board.setTiles(tiles);
             }
         });
@@ -210,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements IPresentation
             public void run()
             {
                 isPlayerTurn = !isPlayerTurn;
-//                board.setOnTileTouchListener(isPlayerTurn ? listener : null);
                 board.enableTileTouchListener(isPlayerTurn);
                 currentTurnDescription.setText(isPlayerTurn ? MY_TURN_DESCRIPTION : OPPONENT_TURN_DESCRIPTION);
             }
@@ -232,7 +186,6 @@ public class MainActivity extends AppCompatActivity implements IPresentation
             {
                 Toast toast = Toast.makeText(MainActivity.this, "Illegal move, try again!", Toast.LENGTH_SHORT);
                 toast.show();
-//                board.setOnTileTouchListener(listener);
                 board.enableTileTouchListener(true);
             }
         });
@@ -281,6 +234,20 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     }
 
     @Override
+    public void notifyError()
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                ActivityRouter.returnToTitleScreen(MainActivity.this);
+                MainActivity.this.finish();
+            }
+        });
+    }
+
+    @Override
     public void setNumberOfPlayer1Tiles(int numOfTiles)
     {
         changePlayerScore(0, numOfTiles);
@@ -318,25 +285,4 @@ public class MainActivity extends AppCompatActivity implements IPresentation
 
         currentTurnDescription = (TextView) findViewById(R.id.turnDescription);
     }
-
-//    private int getLinearIndex(int row, int col)
-//    {
-//        return ( (row * boardSize) + col );
-//    }
-
-//    private class OpponentCommandReceiver extends BroadcastReceiver
-//    {
-//        @Override
-//        public void onReceive(Context context, Intent intent)
-//        {
-//            Log.d("Receiver", "Received opponent move!");
-//            if (BroadcastRouter.MOVE_SEND.equals(intent.getAction()))
-//            {
-//                int row = intent.getIntExtra(BroadcastRouter.BROADCAST_ROW_KEY, -1);
-//                int column = intent.getIntExtra(BroadcastRouter.BROADCAST_COLUMN_KEY, -1);
-//                Log.d("Receiver", "Opponent has touched row " + row + " and column " + column);
-//                controller.onTileTouch(row, column);
-//            }
-//        }
-//    }
 }

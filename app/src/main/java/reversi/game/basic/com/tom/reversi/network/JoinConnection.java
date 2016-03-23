@@ -11,6 +11,10 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import reversi.game.basic.com.tom.reversi.controller.ControllerBus;
+import reversi.game.basic.com.tom.reversi.controller.Event;
+import reversi.game.basic.com.tom.reversi.controller.EventTypes;
+
 /**
  * Class for handling join connection setup and message sending requests.
  */
@@ -48,6 +52,7 @@ public class JoinConnection implements IConnection
         catch (IOException e)
         {
             Log.e(JOIN_TAG, "Failed to send message");
+            ControllerBus.sendEvent(new Event(EventTypes.DISCONNECTION));
         }
     }
 

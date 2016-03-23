@@ -5,7 +5,7 @@ import android.content.Intent;
 
 import reversi.game.basic.com.tom.reversi.activities.MainActivity;
 import reversi.game.basic.com.tom.reversi.activities.TitleScreenActivity;
-import reversi.game.basic.com.tom.reversi.debug.OfflineMainActivity;
+import reversi.game.basic.com.tom.reversi.activities.OfflineMainActivity;
 import reversi.game.basic.com.tom.reversi.help.HelpActivity;
 
 /**

@@ -53,6 +53,11 @@ public interface IPresentation
     void notifyTie();
 
     /**
+     * Handle what happens in case of a game-finishing error.
+     */
+    void notifyError();
+
+    /**
      * Sets number of player 1 tiles for display.
      * @param numOfTiles Number of tiles occupied by player 1
      */
