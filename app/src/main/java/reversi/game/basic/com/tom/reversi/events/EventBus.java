@@ -1,77 +1,77 @@
-package reversi.game.basic.com.tom.reversi.controller;
+package reversi.game.basic.com.tom.reversi.events;
 
 import android.util.Log;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * Class designed to register/unregister controller to receive commands from method caller.
  */
-public final class ControllerBus
+public final class EventBus
 {
     private static final String EVENT_TAG = "Event";
 
-    private static final Map<EventTypes, List<IReversiController>> EVENTS = new ConcurrentHashMap<>(1);
+    private static final Map<EventTypes, Set<IEventHandler>> EVENTS = new ConcurrentHashMap<>(1);
     private static final ExecutorService POOL = Executors.newFixedThreadPool(3);
 
-    public static void register(final IReversiController controller, final EventTypes event)
+    public static void register(final IEventHandler handler, final EventTypes event)
     {
         POOL.execute(new Runnable()
         {
             @Override
             public void run()
             {
-                List<IReversiController> controllers = EVENTS.get(event);
-                if (controllers == null)
+                Set<IEventHandler> handlers = EVENTS.get(event);
+                if (handlers == null)
                 {
-                    controllers = new CopyOnWriteArrayList<>();
-                    EVENTS.put(event, controllers);
+                    handlers = new CopyOnWriteArraySet<>();
+                    EVENTS.put(event, handlers);
                 }
 
-                controllers.add(controller);
+                handlers.add(handler);
             }
         });
     }
 
-    public static void unregister(final IReversiController controller, final EventTypes event)
+    public static void unregister(final IEventHandler handler, final EventTypes event)
     {
         POOL.execute(new Runnable()
         {
             @Override
             public void run()
             {
-                List<IReversiController> controllers = EVENTS.get(event);
-                if (controllers != null)
+                Set<IEventHandler> handlers = EVENTS.get(event);
+                if (handlers != null)
                 {
-                    controllers.remove(controller);
+                    handlers.remove(handler);
                 }
             }
         });
     }
 
-    public static void sendEvent(final Event event)
+    public static void sendEvent(final IEvent event)
     {
         POOL.execute(new Runnable()
         {
             @Override
             public void run()
             {
-                List<IReversiController> controllers = EVENTS.get(event.getType());
-                if (controllers == null)
+                Set<IEventHandler> handlers = EVENTS.get(event.getType());
+                if (handlers == null)
                 {
                     return;
                 }
 
 //                Log.d("Receiver", "Opponent has touched row " + row + " and column " + column);
                 Log.d(EVENT_TAG, "Received an event!");
-                for (IReversiController controller : controllers)
+                for (IEventHandler handler : handlers)
                 {
-                    controller.onEvent(event);
+                    handler.onEvent(event);
                 }
             }
         });

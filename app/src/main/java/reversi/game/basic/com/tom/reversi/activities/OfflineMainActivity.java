@@ -80,7 +80,8 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
     {
         super.onResume();
         sensorMgr.registerListener(shakeListener, accelerometer, SensorManager.SENSOR_DELAY_UI);
-        App.register(controller);
+//        App.register(controller);
+        App.registerController();
         controller.setup();
     }
 
@@ -88,7 +89,8 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
     protected void onPause()
     {
         sensorMgr.unregisterListener(shakeListener);
-        App.unregister(controller);
+//        App.unregister(controller);
+        App.unregisterController();
         super.onPause();
     }
 
@@ -197,7 +199,8 @@ public class OfflineMainActivity extends AppCompatActivity implements IPresentat
             @Override
             public void run()
             {
-                String message = (isPlayerTurn) ? "Putin is the winner!" : "Obama is the winner!";
+//                String message = (isPlayerTurn) ? "Putin is the winner!" : "Obama is the winner!";
+                String message = "No more possible moves!";
                 Toast toast = Toast.makeText(OfflineMainActivity.this, message, Toast.LENGTH_SHORT);
                 toast.show();
             }

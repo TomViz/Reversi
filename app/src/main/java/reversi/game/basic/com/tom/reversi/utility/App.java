@@ -10,8 +10,8 @@ import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 
 import reversi.game.basic.com.tom.reversi.activities.IPresentation;
-import reversi.game.basic.com.tom.reversi.controller.ControllerBus;
-import reversi.game.basic.com.tom.reversi.controller.EventTypes;
+import reversi.game.basic.com.tom.reversi.events.EventBus;
+import reversi.game.basic.com.tom.reversi.events.EventTypes;
 import reversi.game.basic.com.tom.reversi.controller.GameController;
 import reversi.game.basic.com.tom.reversi.controller.IReversiController;
 import reversi.game.basic.com.tom.reversi.game_board.GameBoardModel;
@@ -59,17 +59,39 @@ public final class App extends Application
         return MODEL;
     }
 
-    public static void register(IReversiController controller)
+    public static void registerController()
     {
-        ControllerBus.register(controller, EventTypes.MESSAGE_SEND);
-        ControllerBus.register(controller, EventTypes.DISCONNECTION);
+        if (CONTROLLER == null)
+        {
+            CONTROLLER = new GameController(getModel());
+        }
+
+        EventBus.register(CONTROLLER, EventTypes.MESSAGE_SEND);
+        EventBus.register(CONTROLLER, EventTypes.DISCONNECTION);
     }
 
-    public static void unregister(IReversiController controller)
+    public static void unregisterController()
     {
-        ControllerBus.unregister(controller, EventTypes.MESSAGE_SEND);
-        ControllerBus.unregister(controller, EventTypes.DISCONNECTION);
+        if (CONTROLLER == null)
+        {
+            return;
+        }
+
+        EventBus.unregister(CONTROLLER, EventTypes.MESSAGE_SEND);
+        EventBus.unregister(CONTROLLER, EventTypes.DISCONNECTION);
     }
+
+//    public static void register(IReversiController controller)
+//    {
+//        EventBus.register(controller, EventTypes.MESSAGE_SEND);
+//        EventBus.register(controller, EventTypes.DISCONNECTION);
+//    }
+
+//    public static void unregister(IReversiController controller)
+//    {
+//        EventBus.unregister(controller, EventTypes.MESSAGE_SEND);
+//        EventBus.unregister(controller, EventTypes.DISCONNECTION);
+//    }
 
     /**
      * @see <a href="http://stackoverflow.com/questions/16730711/get-my-wifi-ip-address-android">Stack Overflow - Get my wifi ip address Android</a>

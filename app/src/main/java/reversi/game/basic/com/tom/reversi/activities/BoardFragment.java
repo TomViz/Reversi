@@ -1,20 +1,25 @@
 package reversi.game.basic.com.tom.reversi.activities;
 
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.BounceInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import reversi.game.basic.com.tom.reversi.R;
-import reversi.game.basic.com.tom.reversi.controller.ControllerBus;
-import reversi.game.basic.com.tom.reversi.controller.Event;
-import reversi.game.basic.com.tom.reversi.controller.EventTypes;
+import reversi.game.basic.com.tom.reversi.events.EventBus;
+import reversi.game.basic.com.tom.reversi.events.EventTypes;
+import reversi.game.basic.com.tom.reversi.events.MoveEvent;
 import reversi.game.basic.com.tom.reversi.game_board.GameBoardLayout;
 import reversi.game.basic.com.tom.reversi.game_board.GamePieceView;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
@@ -54,8 +59,7 @@ public class BoardFragment extends Fragment
             @Override
             public void onTileTouch(int row, int col)
             {
-//                App.sendCoordinates(row, col);
-                ControllerBus.sendEvent(new Event(EventTypes.MESSAGE_SEND, row, col));
+                EventBus.sendEvent(new MoveEvent(EventTypes.MESSAGE_SEND, row, col));
             }
         };
 
@@ -69,7 +73,15 @@ public class BoardFragment extends Fragment
         for (GameTile tile : tiles)
         {
             GamePieceView view = (GamePieceView) board.getChildAt(getLinearIndex(tile.getRow(), tile.getColumn()));
-            view.setImageBitmap(PlayerIconContainer.getIcon(tile.getPlayer()));
+            if (view.getDrawable() == null)
+            {
+                pop(view, tile);
+            }
+            else
+            {
+                flip(view, tile);
+            }
+//            view.setImageBitmap(PlayerIconContainer.getIcon(tile.getPlayer()));
         }
     }
 
@@ -101,5 +113,58 @@ public class BoardFragment extends Fragment
     private int getLinearIndex(int row, int col)
     {
         return ( (row * boardSize) + col );
+    }
+
+    private void flip(final GamePieceView view, final GameTile tile)
+    {
+        AnimatorSet set = new AnimatorSet();
+        ObjectAnimator flipAnim = ObjectAnimator.ofFloat(view, "rotationY", 0f, 180f);
+        flipAnim.setDuration(250);
+        flipAnim.addListener(new Animator.AnimatorListener()
+        {
+            @Override
+            public void onAnimationStart(Animator animation)
+            {}
+
+            @Override
+            public void onAnimationEnd(Animator animation)
+            {
+                view.setImageBitmap(PlayerIconContainer.getIcon(tile.getPlayer()));
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation)
+            {}
+
+            @Override
+            public void onAnimationRepeat(Animator animation)
+            {}
+        });
+
+        ObjectAnimator reverseFlip = ObjectAnimator.ofFloat(view, "rotationY", 180f, 0f);
+        reverseFlip.setDuration(250);
+        set.play(flipAnim).before(reverseFlip);
+        set.start();
+    }
+
+    private void pop(final GamePieceView view, GameTile tile)
+    {
+        ValueAnimator scaleUp = ValueAnimator.ofFloat(0f, 1.0f);
+        scaleUp.setDuration(490);
+        scaleUp.setInterpolator(new BounceInterpolator());
+        scaleUp.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
+        {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator)
+            {
+                Float newValue = (Float) valueAnimator.getAnimatedValue();
+                view.setScaleY(newValue);
+                view.setScaleX(newValue);
+            }
+        });
+
+        scaleUp.setStartDelay(10);
+        view.setImageBitmap(PlayerIconContainer.getIcon(tile.getPlayer()));
+        scaleUp.start();
     }
 }

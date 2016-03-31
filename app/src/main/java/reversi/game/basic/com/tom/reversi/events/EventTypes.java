@@ -1,4 +1,4 @@
-package reversi.game.basic.com.tom.reversi.controller;
+package reversi.game.basic.com.tom.reversi.events;
 
 /**
  * Types of possible event for the controller to respond.

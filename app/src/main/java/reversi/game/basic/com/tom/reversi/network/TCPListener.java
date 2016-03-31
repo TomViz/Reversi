@@ -7,11 +7,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
-import reversi.game.basic.com.tom.reversi.controller.ControllerBus;
-import reversi.game.basic.com.tom.reversi.controller.Event;
-import reversi.game.basic.com.tom.reversi.controller.EventTypes;
-import reversi.game.basic.com.tom.reversi.utility.App;
-import reversi.game.basic.com.tom.reversi.utility.BroadcastRouter;
+import reversi.game.basic.com.tom.reversi.events.EventBus;
+import reversi.game.basic.com.tom.reversi.events.EventTypes;
+import reversi.game.basic.com.tom.reversi.events.MoveEvent;
+import reversi.game.basic.com.tom.reversi.events.SimpleEvent;
 
 /**
  * Class intended to be run as a listener thread and passing along the incoming messages via broadcast.
@@ -39,7 +38,7 @@ public class TCPListener implements Runnable
                 {
 //                    BroadcastRouter.sendMoveFromOtherPlayer(p.x, p.y);
 //                    App.sendCoordinates(p.x, p.y);
-                    ControllerBus.sendEvent(new Event(EventTypes.MESSAGE_SEND, p.x, p.y));
+                    EventBus.sendEvent(new MoveEvent(EventTypes.MESSAGE_SEND, p.x, p.y));
                 }
                 // TODO else broadcast received illegal command?
             }
@@ -51,7 +50,7 @@ public class TCPListener implements Runnable
         finally
         {
             closeStream();
-            ControllerBus.sendEvent(new Event(EventTypes.DISCONNECTION));
+            EventBus.sendEvent(new SimpleEvent(EventTypes.DISCONNECTION));
         }
     }
 

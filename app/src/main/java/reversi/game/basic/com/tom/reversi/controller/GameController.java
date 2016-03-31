@@ -12,6 +12,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import reversi.game.basic.com.tom.reversi.activities.IPresentation;
+import reversi.game.basic.com.tom.reversi.events.IEvent;
+import reversi.game.basic.com.tom.reversi.events.IEventHandler;
+import reversi.game.basic.com.tom.reversi.events.MoveEvent;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
 import reversi.game.basic.com.tom.reversi.game_board.IReversiModel;
 import reversi.game.basic.com.tom.reversi.game_board.TileOccupancy;
@@ -20,7 +23,7 @@ import reversi.game.basic.com.tom.reversi.network.IConnection;
 /**
  * Controller for Reversi game
  */
-public class GameController implements IReversiController
+public class GameController implements IReversiController, IEventHandler
 {
     private static final String TAG = "Controller";
 
@@ -39,6 +42,7 @@ public class GameController implements IReversiController
 
     private WeakReference<IPresentation> uiRef;
     private IConnection player;
+//    private IConnection players[] = new IConnection[2];
     private final IReversiModel MODEL;
     private final ExecutorService POOL = Executors.newFixedThreadPool(4);
 
@@ -72,7 +76,7 @@ public class GameController implements IReversiController
     }
 
     @Override
-    public void onEvent(final Event event)
+    public void onEvent(final IEvent event)
     {
         POOL.execute(new Runnable()
         {
@@ -88,7 +92,8 @@ public class GameController implements IReversiController
                 switch(event.getType())
                 {
                     case MESSAGE_SEND:
-                        onTileTouch(event.getRow(), event.getColumn());
+                        MoveEvent mEvent = (MoveEvent) event;
+                        onTileTouch(mEvent.getRow(), mEvent.getColumn());
                         break;
 
                     case DISCONNECTION:
@@ -115,6 +120,7 @@ public class GameController implements IReversiController
             if (isTileLegal(row, column, tile))
             {
                 player.sendCoordinates(row, column);
+//                players[currentPlayer].sendCoordinates(row, column);
                 return;
             }
         }
@@ -131,6 +137,13 @@ public class GameController implements IReversiController
         try
         {
             player.close();
+//            players[0].close();
+//            players[1].close();
+            IPresentation ui = uiRef.get();
+            if (ui != null)
+            {
+                ui.notifyError();
+            }
         }
         catch (IOException e)
         {
@@ -162,11 +175,10 @@ public class GameController implements IReversiController
         return false;
     }
 
-    @Override
-    public int getBoardSize()
-    {
-        return MODEL.getDimension();
-    }
+//    public int getBoardSize()
+//    {
+//        return MODEL.getDimension();
+//    }
 
     private void setStartingTiles()
     {

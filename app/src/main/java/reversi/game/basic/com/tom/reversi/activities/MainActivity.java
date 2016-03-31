@@ -17,10 +17,10 @@ import java.util.List;
 import reversi.game.basic.com.tom.reversi.R;
 import reversi.game.basic.com.tom.reversi.controller.IReversiController;
 import reversi.game.basic.com.tom.reversi.fragments.AboutDialogFragment;
+import reversi.game.basic.com.tom.reversi.fragments.ConnectionErrorDialogFragment;
 import reversi.game.basic.com.tom.reversi.game_board.GameTile;
 import reversi.game.basic.com.tom.reversi.game_board.TileOccupancy;
 import reversi.game.basic.com.tom.reversi.network.ConnectionHandler;
-import reversi.game.basic.com.tom.reversi.utility.ActivityRouter;
 import reversi.game.basic.com.tom.reversi.utility.App;
 import reversi.game.basic.com.tom.reversi.utility.PlayerIconContainer;
 import reversi.game.basic.com.tom.reversi.utility.ShakeListener;
@@ -81,7 +81,8 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     {
         super.onResume();
         sensorMgr.registerListener(shakeListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
-        App.register(controller);
+//        App.register(controller);
+        App.registerController();
         board.enableTileTouchListener(isPlayerTurn);
         controller.setup();
     }
@@ -90,7 +91,8 @@ public class MainActivity extends AppCompatActivity implements IPresentation
     protected void onPause()
     {
         sensorMgr.unregisterListener(shakeListener);
-        App.unregister(controller);
+//        App.unregister(controller);
+        App.unregisterController();
         super.onPause();
     }
 
@@ -241,8 +243,7 @@ public class MainActivity extends AppCompatActivity implements IPresentation
             @Override
             public void run()
             {
-                ActivityRouter.returnToTitleScreen(MainActivity.this);
-                MainActivity.this.finish();
+                new ConnectionErrorDialogFragment().show(getFragmentManager(), null);
             }
         });
     }
